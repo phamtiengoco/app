@@ -46,6 +46,7 @@ if (cluster.isPrimary) {
   });
 
   io.on('connection', async (socket) => {
+    console.log(socket.handshake.headers);
     socket.on('chat message', async (msg, clientOffset, callback) => {
       let result;
       try {
