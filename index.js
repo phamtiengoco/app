@@ -59,6 +59,7 @@ if (cluster.isPrimary) {
         return;
       }
       io.emit('chat message', msg, result.lastID);
+      console.log(msg);
       callback();
     });
 
