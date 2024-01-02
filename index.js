@@ -1,4 +1,4 @@
-const socketIo = import ("socket.io");
+const socketIo = require("socket.io");
 
 
 const cncServer = new socketIo(7035);
