@@ -2,7 +2,7 @@
   "name": "socket-chat-example",
   "version": "0.0.1",
   "description": "my first socket.io app",
-  "type": "module",
+  "type": "commonjs",
   "dependencies": {
     "@socket.io/cluster-adapter": "^0.2.2",
     "@types/socket.io-client": "^3.0.0",
