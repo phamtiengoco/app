@@ -52,14 +52,14 @@ if (cluster.isPrimary) {
         result = await db.run('INSERT INTO messages (content, client_offset) VALUES (?, ?)', msg, clientOffset);
       } catch (e) {
         if (e.errno === 19 /* SQLITE_CONSTRAINT */ ) {
-          callback();
+        
         } else {
           // nothing to do, just let the client retry
         }
         return;
       }
       io.emit('chat message', msg, result.lastID);
-      callback();
+      
     });
 
     if (!socket.recovered) {
