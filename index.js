@@ -59,10 +59,7 @@ if (cluster.isPrimary) {
         }
         return;
       }
-  socket.on("disconnect", () => {
-  console.log( socket.client.conn.server.clientsCount + " user đã thoát " );
-  console.log(socket.id); // undefined
-    });
+
       io.emit('chat message', msg, result.lastID);
       
     });
@@ -80,7 +77,10 @@ if (cluster.isPrimary) {
       }
     }
   });
-
+  io.on("disconnect", () => {
+  console.log( socket.client.conn.server.clientsCount + " user đã thoát " );
+  console.log(socket.id); // undefined
+    });
   const port = process.env.PORT;
 
   server.listen(port, () => {
