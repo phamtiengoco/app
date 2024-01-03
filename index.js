@@ -77,7 +77,7 @@ if (cluster.isPrimary) {
       }
     }
   });
-  socket.on("disconnect",  (reason) => {
+  io.on("disconnect",  () => {
   console.log( socket.client.conn.server.clientsCount + " user đã thoát " );
   console.log(socket.id); // undefined
     });
