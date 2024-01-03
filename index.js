@@ -77,10 +77,11 @@ if (cluster.isPrimary) {
       }
     }
   });
-  io.on("disconnect",  () => {
-  console.log( socket.client.conn.server.clientsCount + " user đã thoát " );
-  console.log(socket.id); // undefined
-    });
+io.on('disconnect', function() {
+    ID = socket.id;
+    console.log('client id - ' + socket.id + ' disconnected.');
+    io.sockets.emit('disconnect_event', data);
+}
   const port = process.env.PORT;
 
   server.listen(port, () => {
