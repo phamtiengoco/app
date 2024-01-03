@@ -63,25 +63,13 @@ if (cluster.isPrimary) {
       io.emit('chat message', msg, result.lastID);
       
     });
+    socket.on("disconnect", (reason) => {
+     console.log( socket.client.conn.server.clientsCount + " Còn lại " );
+    });
 
-    if (!socket.recovered) {
-      try {
-        await db.each('SELECT id, content FROM messages WHERE id > ?',
-          [socket.handshake.auth.serverOffset || 0],
-          (_err, row) => {
-            socket.emit('chat message', row.content, row.id);
-          }
-        )
-      } catch (e) {
-        // something went wrong
-      }
-    }
+    
   });
-io.on('disconnect', function() {
-    ID = socket.id;
-    console.log('client id - ' + socket.id + ' disconnected.');
-    io.sockets.emit('disconnect_event', data);
-}
+
   const port = process.env.PORT;
 
   server.listen(port, () => {
