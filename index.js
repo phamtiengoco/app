@@ -62,7 +62,10 @@ if (cluster.isPrimary) {
       io.emit('chat message', msg, result.lastID);
       
     });
-
+io.on("disconnect", () => {
+  console.log( socket.client.conn.server.clientsCount + " users connected" );
+  console.log(socket.id); // undefined
+});
     if (!socket.recovered) {
       try {
         await db.each('SELECT id, content FROM messages WHERE id > ?',
