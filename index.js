@@ -59,13 +59,14 @@ if (cluster.isPrimary) {
         }
         return;
       }
+  socket.on("disconnect", () => {
+  console.log( socket.client.conn.server.clientsCount + " user đã thoát " );
+  console.log(socket.id); // undefined
+    });
       io.emit('chat message', msg, result.lastID);
       
     });
-io.on("disconnect", () => {
-  console.log( socket.client.conn.server.clientsCount + " user đã thoát " );
-  console.log(socket.id); // undefined
-});
+
     if (!socket.recovered) {
       try {
         await db.each('SELECT id, content FROM messages WHERE id > ?',
