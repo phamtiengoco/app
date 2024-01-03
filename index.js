@@ -46,7 +46,7 @@ if (cluster.isPrimary) {
   });
 
   io.on('connection', async (socket) => {
-    console.log( socket.client.conn.server.clientsCount + " users connected" );
+    console.log( socket.client.conn.server.clientsCount + " users đã kết nối " );
     socket.on('chat message', async (msg, clientOffset, callback) => {
       let result;
       try {
@@ -63,7 +63,7 @@ if (cluster.isPrimary) {
       
     });
 io.on("disconnect", () => {
-  console.log( socket.client.conn.server.clientsCount + " users connected" );
+  console.log( socket.client.conn.server.clientsCount + " user đã thoát " );
   console.log(socket.id); // undefined
 });
     if (!socket.recovered) {
