@@ -47,9 +47,8 @@ if (cluster.isPrimary) {
 
   io.on('connection', async (socket) => {
     console.log( socket.client.conn.server.clientsCount + " users đã kết nối "  );
-    console.log("url"+socket.handshake.url);
-    clientId=socket.handshake.query.clientId;
-    console.log("connected clientId:"+clientId);
+    console.log("url"+socket.request.headers.origin);
+
     socket.on('chat message', async (msg, clientOffset, callback) => {
       let result;
       try {
