@@ -47,7 +47,7 @@ if (cluster.isPrimary) {
 
   io.on('connection', async (socket) => {
     console.log( socket.client.conn.server.clientsCount + " users đã kết nối "  );
-    console.log("url"+socket.request.headers.origin);
+    console.log("IP=>"+socket.request.connection.remoteAddress);
 
     socket.on('chat message', async (msg, clientOffset, callback) => {
       let result;
