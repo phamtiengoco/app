@@ -49,7 +49,7 @@ if (cluster.isPrimary) {
     console.log( socket.client.conn.server.clientsCount + " users đã kết nối "  );
     io.sockets.emit('broadcast',socket.client.conn.server.clientsCount + ' clients connected!');
     console.log("client "+socket.client.id);
-    console.log("client "+socket.client.conn.remoteAddress);
+   
     socket.on('chat message', async (msg, clientOffset, callback) => {
       let result;
       try {
