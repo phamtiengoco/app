@@ -22,13 +22,7 @@
     <input id="input" autocomplete="off" /><button>Send</button>
   </form>
   <script src="/socket.io/socket.io.js"></script>
-     <script>
-      var socket = io();
-      socket.on('broadcast',function(data) {
-         document.body.innerHTML = '';
-         document.write(data.description);
-      });
-   </script>
+
   <script>
     let counter = 0;
 
