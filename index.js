@@ -67,7 +67,7 @@ if (cluster.isPrimary) {
     });
 
     socket.on("disconnect", (reason) => {
-     console.log( socket.client.conn.server.clientsCount + " Còn lại " );
+     console.log( socket.client.conn.server.clientsCount + "Số Còn lại " );
     });
 
     
