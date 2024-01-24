@@ -70,18 +70,7 @@ if (cluster.isPrimary) {
      console.log( socket.client.conn.server.clientsCount + "Số Còn lại là " );
     });
 
-      if (!socket.recovered) {
-      try {
-        await db.each('SELECT id, content FROM messages WHERE id > ?',
-          [socket.handshake.auth.serverOffset || 0],
-          (_err, row) => {
-            socket.emit('chat message', row.content, row.id);
-          }
-        )
-      } catch (e) {
-        // something went 
-      }
-    }  
+
   });
 
   const port = process.env.PORT;
