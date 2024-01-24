@@ -46,7 +46,7 @@ if (cluster.isPrimary) {
   });
 
   io.on('connection', async (socket) => {
-    console.log( socket.client.conn.server.clientsCount + " users đã kết nối -" +socket.client.id );
+    console.log( socket.client.conn.server.clientsCount + "  đã kết nối -" +socket.client.id );
 
    
     socket.on('chat message', async (msg, clientOffset, callback) => {
