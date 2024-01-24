@@ -67,7 +67,7 @@ if (cluster.isPrimary) {
     });
 
     socket.on("disconnect", (reason) => {
-     console.log( socket.client.conn.server.clientsCount + "Số Còn lại " );
+     console.log( socket.client.conn.server.clientsCount + "Số Còn lại là " );
     });
 
       if (!socket.recovered) {
@@ -79,7 +79,7 @@ if (cluster.isPrimary) {
           }
         )
       } catch (e) {
-        // something went wrong
+        // something went 
       }
     }  
   });
